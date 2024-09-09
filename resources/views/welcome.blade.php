@@ -75,7 +75,7 @@
         <span class="cat-icon">😼</span>
     </h1>
     <div class="menu-buttons">
-        <button class="menu-button play-button">Jouer</button>
+        <a href="{{ url('/game/level') }}" class="menu-button play-button">Jouer</a>
         <button class="menu-button settings-button">Paramètres</button>
         <button class="menu-button exit-button">Quitter</button>
     </div>
