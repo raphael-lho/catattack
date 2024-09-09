@@ -18,14 +18,92 @@
             width: 100%;
             height: 100%;
         }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+        }
+        #lives {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: red;
+            font-size: 24px;
+        }
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            display: none;
+            width: 80%;
+            max-width: 600px;
+        }
+        #gameOver button {
+            margin: 15px;
+            padding: 10px 20px;
+        }
+
+        @font-face {
+            font-family: 'Undertale';
+            src: url('https://fonts.cdnfonts.com/css/8bit-wonder') format('woff2');
+        }
+        #gameOver {
+            font-family: 'Undertale', sans-serif;
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 6px solid white;
+            padding: 50px;
+            border-radius: 15px;
+        }
+        .undertale-text {
+            font-size: 48px;
+            color: #ffff00;
+            text-shadow: 3px 3px #ff0000;
+            margin-bottom: 30px;
+        }
+        .gameOver-button {
+            font-family: 'Undertale', sans-serif;
+            font-size: 24px;
+            background-color: #ffff00;
+            color: #000000;
+            border: 4px solid #ff0000;
+            padding: 15px 30px;
+            margin: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .gameOver-button:hover {
+            background-color: #ff0000;
+            color: #ffff00;
+            border-color: #ffff00;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <div id="score">Temps: 00:00:00</div>
+    <div id="lives">❤️❤️❤️</div>
+    <div id="gameOver">
+        <h2 class="undertale-text">Game Over</h2>
+        <p class="undertale-text" id="finalScore">Temps final: 00:00:00</p>
+        <button id="restart" class="gameOver-button">Recommencer</button>
+        <button class="gameOver-button" onclick="location.reload()">Regénérer le niveau</button>
+        <button id="quit" class="gameOver-button">Quitter</button>
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -55,6 +133,10 @@
         let terrain = [];
         let enemies = [];
         const obstacleTypes = ['platform', 'hole', 'platform_with_spike', 'moving_platform', 'high_platform'];
+
+        let startTime;
+        let elapsedTime = 0;
+        let lives = 3;
 
         function generateTerrain() {
             let x = 0;
@@ -163,6 +245,34 @@
             cat.velocityX = 0;
             cat.isJumping = false;
             camera.x = 0;
+            startTime = Date.now();
+            elapsedTime = 0;
+            lives = 3;
+            updateScore();
+            updateLives();
+            gameOverElement.style.display = 'none';
+            terrain = [];
+            enemies = [];
+            generateTerrain();
+            gameLoop();
+        }
+
+        function updateScore() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            const formattedTime = formatTime(elapsedTime);
+            scoreElement.textContent = `Temps: ${formattedTime}`;
+        }
+
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            return `${hours.toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+        }
+
+        function updateLives() {
+            livesElement.textContent = '❤️'.repeat(lives);
         }
 
         function gameLoop() {
@@ -227,7 +337,7 @@
                         if (obstacle.hasSpike && 
                             cat.x + cat.width > obstacle.x + obstacle.width / 2 - 15 &&
                             cat.x < obstacle.x + obstacle.width / 2 + 15) {
-                            resetGame();
+                            loseLife();
                         }
 
                         if (obstacle.type === 'moving_platform') {
@@ -244,12 +354,12 @@
                     cat.y < enemy.y + enemy.height &&
                     cat.y + cat.height > enemy.y
                 ) {
-                    resetGame();
+                    loseLife();
                 }
             });
 
             if (cat.y > canvas.height) {
-                resetGame();
+                loseLife();
             }
 
             const catImage = new Image();
@@ -259,11 +369,34 @@
             ctx.restore();
 
             if (cat.x > levelWidth - 300 && cat.y === canvas.height - groundHeight - cat.height) {
-                alert('Level completed!');
+                const finalTime = formatTime(elapsedTime);
+                alert(`Niveau terminé! Temps final: ${finalTime}`);
                 resetGame();
             }
 
+            updateScore();
             requestAnimationFrame(gameLoop);
+        }
+
+        function loseLife() {
+            lives--;
+            updateLives();
+            if (lives > 0) {
+                cat.x = 50;
+                cat.y = canvas.height - groundHeight - cat.height;
+                cat.velocityY = 0;
+                cat.velocityX = 0;
+                cat.isJumping = false;
+                camera.x = 0;
+            } else {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            const finalTime = formatTime(elapsedTime);
+            finalScoreElement.textContent = `Temps final: ${finalTime}`;
+            gameOverElement.style.display = 'block';
         }
 
         const keys = {};
@@ -293,9 +426,16 @@
             }
         }
 
+        document.getElementById('restart').addEventListener('click', () => {
+            resetGame();
+            camera.x = cat.x - canvas.width / 4;
+        });
+        document.getElementById('quit').addEventListener('click', () => {
+            window.location.href = '{{ url("/") }}';
+        });
+
         generateTerrain();
         resetGame();
-        gameLoop();
     </script>
 </body>
 </html>

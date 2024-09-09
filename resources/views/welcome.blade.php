@@ -46,20 +46,41 @@
         font-weight: bold;
         text-transform: uppercase;
     }
-    .menu-button:hover {
-        background-color: #e94560;
+    .play-button {
+        background-color: #4caf50;
+    }
+    .play-button:hover {
+        background-color: #155e24;
         color: #ffffff;
         transform: scale(1.05);
         box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
     }
-    .play-button {
-        background-color: #4caf50;
+    .levels-button {
+        background-color: #ff0000;
+    }
+    .levels-button:hover {
+        background-color: rgb(146, 3, 3);
+        color: #ffffff;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
     }
     .settings-button {
         background-color: #ffa500;
     }
+    .settings-button:hover {
+        background-color: #8f5e03;
+        color: #ffffff;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+    }
     .exit-button {
-        background-color: #f44336;
+        background-color: #353434;
+    }
+    .exit-button:hover {
+        background-color: #000000;
+        color: #ffffff;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
     }
     .cat-icon {
         font-size: 48px;
@@ -76,7 +97,8 @@
     </h1>
     <div class="menu-buttons">
         <a href="{{ url('/game/level') }}" class="menu-button play-button">Jouer</a>
+        <button class="menu-button levels-button">Niveaux</button>
         <button class="menu-button settings-button">Paramètres</button>
-        <button class="menu-button exit-button">Quitter</button>
+        <button class="menu-button exit-button" onclick="window.location.href='https://www.google.com'">Quitter</button>
     </div>
 </div>
